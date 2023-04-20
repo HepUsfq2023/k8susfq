@@ -1,10 +1,10 @@
-## Instrucciones K8s para Deber 8
+# Instrucciones K8s para Deber 8
 
 Estas instrucciones están destinadas a probar la ejecución de un *workflow* de análisis de datos en el Kubernetes (K8s) cluster en la USFQ.
 
 Acá una lista de pasos para poder entender y ejecutar dicho workflow:
 
-### 1. Habilitar roles
+## 1. Habilitar roles
 
 Ingrese a uno de los nodos del minicluster (de preferencia el que
 ha venido utilizando, aunque no es necesario hacerlo así.)
@@ -33,7 +33,7 @@ Cambie los permisos de ese archivo:
 chmod 600 .kube/config
 ```
 
-### 2. Probar que se puede ejecutar `kubectl`
+## 2. Probar que se puede ejecutar `kubectl`
 
 El comando [kubectl](https://kubernetes.io/docs/reference/kubectl/cheatsheet/) está disponible en todos los *worker nodes* (landau, maxwell y schrodinger) y en el *main node* (einstein).
 
@@ -54,7 +54,7 @@ kubectl get pods --all-namespaces
 Ninguno de estos comandos debería dar error.  El último lista todos los procesos (pods corriendo containers) necesarios para el
 funcionamiento del k8s cluster.
 
-### 3.  Probar que se puede ejecutar un *deployment*
+## 3.  Probar que se puede ejecutar un *deployment*
 
 De manera similar a lo que hicimos en el K8s cluster en la nube (GKE),
 pruebe que puede crear un *deployment*.  **No se olvide de reeemplazar
@@ -84,7 +84,7 @@ Una vez realizado el test, elimine el deployment:
 kubectl delete deployment edgar-nginx-depl
 ```
 
-### 4. Chequear que existe un Persistent Volume
+## 4. Chequear que existe un Persistent Volume
 
 El almacenamiento en un cluster de K8s se realiza creando un
 *persisten volume* (pv).  El pv que ya se ha creado en el cluster
@@ -101,9 +101,9 @@ puede asegurar que es así corriendo el comando:
 kubectl get pv
 ```
 
-El *STATUS* debería aparecer como *Available*.
+El *STATUS* debería aparecer como *Available* o *Bound* (si ya se ha hecho un *claim* [ver abajo]).
 
-### 5. Argo
+## 5. Argo
 Argo es una maquinaria para correr workflows y trabajos en paralelo en un cluster de K8s. EL CLI (los comandos de argo) ya ha sido instalado
 en todos los nodos de nuestro cluster.  
 
@@ -111,7 +111,7 @@ Mire es [vídeo](https://www.youtube.com/watch?v=TZgLkCFQ2tk) sobre Argo.
 
 Para trabajar
 con workflows (nuestro objetivo final), es necesario hacer un
-deployment del servidor y controlador de Argo.  El administrador
+deployment del servidor y controlador de Argo en el k8s cluster.  El administrador
 ya ha realizado este paso siguiendo estas [instrucciones](https://argoproj.github.io/argo-workflows/quick-start/).
 
 Confirme que el servidor y controlador de argo están funcionando:
@@ -144,6 +144,8 @@ argo get -n argo @latest
 
 @latest indica el último workflow.
 
+En este ejercicio y en nuestro análisis no recurriremos al UI (user interface) de Argo (i.e, la interfaz gráfica).  Toda la información se rescatará directamente de la línea de comandos.
+
 También se puede mirar los logs de la ejecución:
 
 ```
@@ -161,12 +163,12 @@ argo delete <nombre del workflow> -n argo
 
 Reemplace \<nombre del workflow\> por, e.g., *hello-world-8qhf2* (i.e, el nombre con el que se haya creado el workflow).
 
-### 6. PV Claims
+## 6. PV Claims
 
 Algunas aplicaciones, como los análisis que pretendemos correr en el K8s cluster, necesitan de espacio de disco para escribir los resultados.  Una aplicación accede
 al espacio de disco (ya creado con el pv arriba) a través
 de un *pv claim* (pvc).  Este pvc ya ha sido creado
-para el namespace argo en nuestro cluster siguiendo [estas](https://raw.githubusercontent.com/argoproj/argo-workflows/master/examples/hello-world.yaml) instrucciones y el archivo yaml en `/nfs/cajuela/k8s/pvc-mynfs.yaml`.  Asegúrese
+para el namespace argo en nuestro cluster siguiendo [estas](https://raw.githubusercontent.com/argoproj/argo-workflows/master/examples/hello-world.yaml) instrucciones y utilizando el archivo yaml en `/nfs/cajuela/k8s/pvc-mynfs.yaml`.  Asegúrese
 de que el pvc este activo:
 
 ```
@@ -175,15 +177,15 @@ kubectl get pvc -n argo
 
 El *STATUS* debe estar en *Bound* (Bound al pv que creamos arriba, obviamente.)  Al revisar los archivos yaml con los que creamos el pv y el pvc notará que de los 500 GB que están disponibles en el pv, el pvc solicita al menos 200 GB.
 
-### 7. Correr el análisis completo (todo lo que hemos hecho en el curso)
+## 7. Correr el análisis completo (todo lo que hemos hecho en el curso)
 
 [Estas](https://cms-opendata-workshop.github.io/workshop2022-lesson-cloud/) instrucciones muestran un ejemplo de cómo correr
 todo el análisis que hemos estado aprendiendo en el curso
-de manera automatizada usando un workflow de Argo.  Es decir, el workflow identifica los datasets necesarios, corre el código de CMSSW POET, crea las correspondientes ntuplas planas en archivos de ROOT  y luego corre el análisis usando Coffea sobre dichos archivos para crear los histogramas finales.
+de manera automatizada usando un workflow de Argo.  Es decir, el workflow identifica los datasets necesarios, corre el código de CMSSW POET, crea las correspondientes ntuplas planas en archivos de ROOT y luego corre el análisis usando Coffea sobre dichos archivos para crear los histogramas finales.
 
-Sin embargo, estas instrucciones (que siguen siendo válidas), están diseñadas para correr en la nube.  Nosotros queremos correr en nuestro cluster K8s local, así que tendremos que hacer una pequeña modificación.
+Sin embargo, estas instrucciones (que siguen siendo válidas y pueden servir de guía adicional), están diseñadas para correr en la nube.  Nosotros queremos correr en nuestro cluster K8s local, así que tendremos que hacer una pequeña modificación.
 
-Para no sobrecargar el cluster este paso **debe hacerlo junto a sus compañeros**.  En realidad, **una sola persona va a enviar este workflow**.   Todos los demás pasos se pueden hacer individualmente.
+Para no sobrecargar el cluster este paso **debe hacerlo junto a sus compañeros, en grupo**.  **Una sola persona va a realizar la modificación en el workflow y lo ejecutará** (los demás deberán estar presentes para ver cómo se realiza).   Todos los demás pasos se pueden hacer individualmente.
 
 El workflow utiliza un archivo yaml que se lo puede encontrar [aquí](https://raw.githubusercontent.com/cms-opendata-analyses/PhysObjectExtractorTool/odws2022-ttbaljets-prod/PhysObjectExtractor/cloud/argo-poet-ttbar.yaml).
 
@@ -191,15 +193,15 @@ Descargue este archivo yaml:
 ```
 wget https://raw.githubusercontent.com/cms-opendata-analyses/PhysObjectExtractorTool/odws2022-ttbaljets-prod/PhysObjectExtractor/cloud/argo-poet-ttbar.yaml
 ```
-**El compañero que va a enviar el workflow** deberá cambiar la línea `claimName: nfs-<NUMBER>` por `claimName: pvc-mynfs` (este paso lo pueden mirar junto, en grupo).  Es decir, la única moficación que debemos hacer es usar el pvc que ya está disponible en nuestro cluster.  Este workflow, entonces, usará como estorage el disco en `/nfs/cajuela`.
+**El compañero que va a enviar el workflow** deberá cambiar la línea `claimName: nfs-<NUMBER>` por `claimName: pvc-mynfs` (**este paso lo deben mirar juntos**, en grupo).  Es decir, la única moficación que debemos hacer es usar el pvc que ya está disponible en nuestro cluster.  Este workflow, entonces, usará como storage el disco en `/nfs/cajuela`.
 
-Usted o **uno solo de sus compañeros** ejecutará el workflow:
+Usted o **uno solo de sus compañeros** (**pero solo una persona**) ejecutará el workflow (con la modificación arriba) de este modo:
 
 ```
 argo submit argo-poet-ttbar.yaml -n argo
 ```
 
-El workflow va a correr por al menos 3 horas.  Todos los pasos abajo pueden realizarse individualmente:
+El workflow va a correr por al menos 3 horas.  Todos los demás pasos siguientes den realizarse individualmente:
 
 Puede chequear constante o esporádicamente que esté corriendo:
 
