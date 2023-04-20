@@ -193,15 +193,15 @@ Descargue este archivo yaml:
 ```
 wget https://raw.githubusercontent.com/cms-opendata-analyses/PhysObjectExtractorTool/odws2022-ttbaljets-prod/PhysObjectExtractor/cloud/argo-poet-ttbar.yaml
 ```
-**El compañero que va a enviar el workflow** deberá cambiar la línea `claimName: nfs-<NUMBER>` por `claimName: pvc-mynfs` (**este paso lo deben mirar juntos**, en grupo).  Es decir, la única moficación que debemos hacer es usar el pvc que ya está disponible en nuestro cluster.  Este workflow, entonces, usará como storage el disco en `/nfs/cajuela`.
+**El compañero que va a enviar el workflow** deberá cambiar la línea `claimName: nfs-<NUMBER>` por `claimName: pvc-mynfs` (**este paso lo deben mirar juntos**, en grupo, aunque una sola persona lo realice).  Es decir, la única moficación que debemos hacer es usar el pvc que ya está disponible en nuestro cluster.  Este workflow, entonces, usará como storage el disco en `/nfs/cajuela`.
 
-Usted o **uno solo de sus compañeros** (**pero solo una persona**) ejecutará el workflow (con la modificación arriba) de este modo:
+Usted o **uno de sus compañeros** (**pero solo una persona**) ejecutará el workflow (con la modificación arriba) de este modo:
 
 ```
 argo submit argo-poet-ttbar.yaml -n argo
 ```
 
-El workflow va a correr por al menos 3 horas.  Todos los demás pasos siguientes den realizarse individualmente:
+El workflow va a correr por al menos 3 horas.  Todos los demás pasos siguientes deben realizarse individualmente:
 
 Puede chequear constante o esporádicamente que esté corriendo:
 
