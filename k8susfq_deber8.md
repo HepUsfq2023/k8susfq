@@ -236,6 +236,71 @@ El resultado final será un archivo `histograms.root` que se escribirá en `/nfs
 
 
 
+## Como reconstruir el namespace argo
+
+No es necesario ejecutar estas instrucciones a menos que algo se desconfigure con el namespace de argo.
+
+Primero debemos borrar todos los pods, deployments y/o pvc que pueden estar corriendo bajo ese namespace borrando el mismo namespace:
+
+```
+kubectl delete namespace argo
+```
+
+Borre también el pv:
+
+```
+kubectl delete pv pv-mynfs
+```
+
+Ahora estamos listos para empezar de cero:
+
+Recree el pv:
+
+```
+kubectl create -f /nfs/cajuela/k8s/pv-mynfs.yaml
+```
+
+Chequear que fue creado correctamente.  El *STATUS* debe
+aparecer como *Available*:
+
+```
+kubectl get pv
+```
+
+Cree el namespace de argo:
+
+```
+kubectl create namespace argo
+```
+
+Cree el deployment de argo server y worflow controller:
+
+```
+kubectl apply -n argo -f https://github.com/argoproj/argo-workflows/releases/download/v3.4.7/install.yaml
+```
+
+Asegúrese de que todo esté corriendo:
+
+```
+kubectl get deployment -n argo
+kubectl get pods -n argo
+```
+
+Cree el pv claim (pvc):
+
+```
+kubectl apply -n argo -f /nfs/cajuela/k8s/pvc-mynfs.yaml
+```
+
+Chequear que el pvc se creó correctamente.  El *STATUS* debe leer *Bound*:
+
+```
+kubectl get pvc -n argo
+```
+
+
+
+
 
 
 
